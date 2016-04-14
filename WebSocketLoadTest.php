@@ -3,9 +3,10 @@
 require('vendor/autoload.php');
 require_once('LoadTestingTest.class.php');
 
+// Include WebSocket Client
 use WebSocket\Client;
 
-/** Single Page Load Testing */
+/** WebSocket Load Testing */
 class CustomTest extends LoadTestingTest
 {
   /**
@@ -25,62 +26,67 @@ class CustomTest extends LoadTestingTest
    */
   public function startTest()
   {
-		$startTime = time();
-		$userId = 'user-'.$this->testNum;
+  	// Capture start time and userid.
+	$startTime = time();
+	$userId = 'user-'.$this->testNum;
 
-    try {
-      // Load page
-      $this->loadPage();
+    	try {
+      		// Load page
+      		$this->loadPage();
+		
+		// Capture overal time for running test plan	
+		$endTime = time();
+		$totalTime = $endTime - $startTime;
+		recordPageTime($endTime, $totalTime, true, 0);
 			
-			$endTime = time();
-			$totalTime = $endTime - $startTime;
-			recordPageTime($endTime, $totalTime, true, 0);
-			
-    } catch (Exception $e) {
+    	} catch (Exception $e) {
 
-			$endTime = time();
-			$totalTime = $endTime - $startTime;
-			recordPageTime($endTime, $totalTime, false, 0);
+		// Capture time and error if plan failed.
+		$endTime = time();
+		$totalTime = $endTime - $startTime;
+		recordPageTime($endTime, $totalTime, false, 0);
 			      
-      // Throw exception
-      throw $e;
-    }
+      		// Throw exception
+      		throw $e;
+    	}
   }
   
   /**
-   * Load page
-   * @return LoadTestingPageResponse Page
-   * @throws LoadTestingTestException
+   * Send and receive websocket calls.
    */
   public function loadPage()
   {
-		$client = null;
+  	// Create connection
+	$client = null;
+	try{
+		$client = new Client("ws://echo.websocket.org/");
+	} catch( Exception $e ){
+		recordError("Failed to create connection." . $e->getMessage() );
+		return;
+	}
+	
+	// Small Iteration for 25 requests 
+	for ($i = 0; $i < 25 ; $i++) { 
+		// Capture start  and captuer success/fail for 'Sending'
+		$startTime = time();
 		try{
-			$client = new Client("ws://echo.websocket.org/");
-		} catch( Exception $e ){
-			recordError("Failed to create connection." . $e->getMessage() );
-			return;
+			$client->send("Hello WebSocket.org!");
+			$this->sendResult("Send Hello", $startTime);
+		} catch(Exception $e){
+			$this->sendResult( "Send Hello", $startTime, 0, $e->getMessage());
+			continue;
 		}
-		
-		for ($i = 0; $i < 25 ; $i++) { 
-			$startTime = time();
-			try{
-				$client->send("Hello WebSocket.org!");
-				$this->sendResult("Send Hello", $startTime);
-			} catch(Exception $e){
-				$this->sendResult( "Send Hello", $startTime, 0, $e->getMessage());
-				continue;
-			}
 
-			$startTime = time();
-			try{
-				$msg = $client->receive(); // Will output 'Hello WebSocket.org!'
-				$this->sendResult("Receive", $startTime, strlen($msg) );
-			} catch(Exception $e){
-				$this->sendResult( "Receive", $startTime, 0, $e->getMessage());
-				continue;
-			}
+		// Capture start  and captuer success/fail for 'Receiving'
+		$startTime = time();
+		try{
+			$msg = $client->receive(); // Will output 'Hello WebSocket.org!'
+			$this->sendResult("Receive", $startTime, strlen($msg) );
+		} catch(Exception $e){
+			$this->sendResult( "Receive", $startTime, 0, $e->getMessage());
+			continue;
 		}
+	}
   }
 	
 	/**

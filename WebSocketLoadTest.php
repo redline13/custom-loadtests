@@ -89,16 +89,16 @@ class CustomTest extends LoadTestingTest
 	}
   }
 	
-	/**
-	 * Wrap sending some results and errors for requests
-	 */
-	protected function sendResult( $key, $startTime, $kb = 0 , $error = null ){
-		$fail = !empty($error);
-		$endTime = time();
-		$totalTime = $endTime - $startTime;
-		recordURLPageLoad( $key, $endTime, $totalTime, $fail, $kb);
-		if ( $fail ){
-			recordError("$key Error: $error");
-		}
+  /**
+   * Wrap sending some results and errors for requests
+   */
+  protected function sendResult( $key, $startTime, $kb = 0 , $error = null ){
+	$fail = !empty($error);
+	$endTime = time();
+	$totalTime = $endTime - $startTime;
+	recordURLPageLoad( $key, $endTime, $totalTime, $fail, $kb);
+	if ( $fail ){
+		recordError("$key Error: $error");
 	}
+  }
 }

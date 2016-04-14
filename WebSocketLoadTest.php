@@ -30,14 +30,13 @@ class CustomTest extends LoadTestingTest
 
     try {
       // Load page
-      $page = $this->loadPage();
+      $this->loadPage();
 			
 			$endTime = time();
 			$totalTime = $endTime - $startTime;
 			recordPageTime($endTime, $totalTime, true, 0);
 			
     } catch (Exception $e) {
-      echo "Test failed.\n";
 
 			$endTime = time();
 			$totalTime = $endTime - $startTime;
@@ -82,8 +81,6 @@ class CustomTest extends LoadTestingTest
 				continue;
 			}
 		}
-
-    return $page;
   }
 	
 	/**
